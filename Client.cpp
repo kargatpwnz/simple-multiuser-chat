@@ -1,33 +1,25 @@
-//
-// Created by na1l on 24.07.18.
-//
-
-
 #include <arpa/inet.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <pthread.h>
 #include <string>
-#include <cstdio>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include <iostream>
-#include <cstring>
-#include <cstdlib>
-#include <string>
+
 #include "Client.h"
 
 Client::Client()
 {
-//    ip_ = "127.0.0.1";
-//    Connect();
 }
 
 Client::Client(const std::string& ip_, int port_num_)
         :ip_(ip_), port_num_(port_num_)
 {
     std::cout << ip_ << " " << port_num_ << std::endl;
-//    Connect();
 }
 
 void Client::Connect()
@@ -42,8 +34,8 @@ void Client::Connect()
     server_addr_.sin_port = htons(port_num_);
     server_addr_.sin_addr.s_addr = inet_addr(ip_.data());
 
-    if (connect(client_sock, (struct sockaddr *)&server_addr_, sizeof server_addr_) == 0)
-        std::cout << "connecting to server port number " << port_num_ << std::endl;
+    if (connect(client_sock, (struct sockaddr *)&server_addr_, sizeof server_addr_) < 0)
+        perror("Connect error");
     std::cout << "connected!" << std::endl;
     int tid_recv, tid_send;
 

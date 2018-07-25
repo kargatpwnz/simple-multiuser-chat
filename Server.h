@@ -8,15 +8,15 @@
 #include "Client.h"
 
 #include <netinet/in.h>
-#include <sys/socket.h>
-
 #include <pthread.h>
+#include <sys/socket.h>
 #include <vector>
 
 
 class Server {
 public:
     Server();
+    virtual ~Server();
     void HandleConnections();
 
 private:

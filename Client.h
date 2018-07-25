@@ -7,11 +7,10 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <pthread.h>
 #include <string>
-#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 

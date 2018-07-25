@@ -1,14 +1,13 @@
-#include <iostream>
-#include <cstring>
-#include <string>
-#include <cstdlib>
-#include <unistd.h>
-#include <pthread.h>
-
 #include <arpa/inet.h>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include <netinet/in.h>
-#include <sys/types.h>
+#include <pthread.h>
+#include <string>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <vector>
 
 #include "Server.h"
@@ -16,6 +15,8 @@
 // Static variables
 std::vector<Client *> Server::clients_;
 pthread_mutex_t Server::mutex_;
+//pthread_t Server::threads_[];
+
 int Server::idx_;
 
 Server::Server()
@@ -43,6 +44,15 @@ Server::Server()
     listen(server_sock_, 10);
 }
 
+Server::~Server()
+{
+    for (auto &client : clients_)
+        delete client;
+
+
+}
+
+
 void Server::HandleConnections()
 {
     Client *client;
@@ -50,6 +60,7 @@ void Server::HandleConnections()
     socklen_t client_len = sizeof client_addr_;
     Server::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
+    int thread_count = 0;
     // Endless loop for connection handling
     while (1) {
         if (clients_.size() < 10) {
@@ -92,20 +103,31 @@ void *Server::HandleClient(void* arg)
         // Disconnect or another error indication
         if (n <= 0) {
             std::string msg = "\nClient " + client->name + " disconnected\n";
-            std::cout << msg << std::endl;
-            BcastMessage(msg.data(), client);
-            idx_ = client->id;
+            if (!clients_.empty())
+                BcastMessage(msg.data(), client);
 
-            // Critical section, delete client after disconnect
+            // Critical section, delete client after disconnect, close socket
             pthread_mutex_lock(&Server::mutex_);
             int index = FindClientIndex(client);
+            if (index == -1) {
+                pthread_mutex_unlock(&Server::mutex_);
+                pthread_exit(nullptr);
+            }
             Server::clients_.erase(clients_.begin() + index);
             shutdown(client->client_sock, SHUT_RDWR);
             close(client->client_sock);
+
+            // If all cients are gone start indexing from 0 again
+            if (clients_.empty())
+                idx_ = 0;
+            else
+                // New client idx would be last disconnected client
+                idx_ = client->id;
             pthread_mutex_unlock(&Server::mutex_);
 
-            SendOnline(clients_.size());
-            break;
+            if (!clients_.empty()) {
+                SendOnline(clients_.size());
+            }
         }  else {
             // Send message to all clients
             std::string str = "Client " + client->name + ": ";
