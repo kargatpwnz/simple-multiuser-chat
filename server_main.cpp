@@ -55,82 +55,17 @@ int main(int argc, char* argv[])
         }
     }
 
+    Server server;
+
     // Create daemon
     if (to_start) {
-        std::ifstream pid_file("/tmp/server_pid", std::ifstream::in); // File with server pid
-        if (pid_file.good()) {
-            std::cout << "Server already running" << std::endl;
-            pid_file.close();
-            exit(EXIT_FAILURE);
-        } else {
-            std::cout << "Creating server..." << std::endl;
-        }
-
-        pid_t process_id = 0;
-        pid_t sid = 0;
-
-        // Create child process
-        process_id = fork();
-
-        // Indication of fork() failure
-        if (process_id < 0) {
-            perror("fork failed!");
-            exit(EXIT_FAILURE);
-        }
-
-        // Kill parent process
-        if (process_id > 0) {
-            std::cout << "Server process id " << process_id << std::endl;
-            std::ofstream out_pid_file("/tmp/server_pid");
-
-            if (out_pid_file.is_open()) {
-                out_pid_file << process_id << std::endl;
-                out_pid_file.close();
-            } else {
-                perror("Failed to write pid to file");
-                exit(EXIT_FAILURE);
-            }
-            // return success in exit status
-            exit(EXIT_SUCCESS);
-        }
-
-        // Unmask the file mode
-        umask(0);
-
-        // Set new session
-        sid = setsid();
-        if (sid < 0) {
-            // Return failure
-            exit(EXIT_FAILURE);
-        }
-
-        // Change current directory
-        chdir("/");
-
-        // Close stdin. stdout and stderr
-        close(STDIN_FILENO);
-        close(STDOUT_FILENO);
-        close(STDERR_FILENO);
-
-        // Create server
-        Server server;
-        server.HandleConnections();
+        server.CreateSocketAndListen();
+        server.CreateAndStartDaemon();
     }
 
-    // Read server process id from file, kill process and remove file
+    // Kill server daemon
     if (to_kill) {
-        std::cout << "KILL" << std::endl;
-        std::ifstream pid_file("/tmp/server_pid");
-        int pid;
-        pid_file >> pid;
-
-        int code_kill = kill(pid, SIGKILL);
-        if (code_kill != 0)
-            perror("Proc kill error");
-        int code_remove = remove("/tmp/server_pid");
-
-        if (code_remove != 0)
-            perror("delete file error");
+        server.KillDaemon();
     }
 
     return 0;

@@ -1,7 +1,3 @@
-//
-// Created by na1l on 24.07.18.
-//
-
 #ifndef SIBERS_CLIENT_H
 #define SIBERS_CLIENT_H
 
@@ -12,7 +8,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 
 class Client {
 public:
@@ -29,8 +24,8 @@ private:
     std::string ip_;
     pthread_t send_thread, recv_thread;
 
-    static void *RecvHandler(void *arg);
-    static void *SendHandler(void *arg);
+    static void* RecvHandler(void* arg);
+    static void* SendHandler(void* arg);
 };
 
 #endif //SIBERS_CLIENT_H

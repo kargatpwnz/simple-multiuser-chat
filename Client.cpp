@@ -34,7 +34,7 @@ void Client::Connect()
     server_addr_.sin_port = htons(port_num_);
     server_addr_.sin_addr.s_addr = inet_addr(ip_.data());
 
-    if (connect(client_sock, (struct sockaddr *)&server_addr_, sizeof server_addr_) < 0)
+    if (connect(client_sock, (struct sockaddr*) &server_addr_, sizeof server_addr_) < 0)
         perror("Connect error");
     std::cout << "connected!" << std::endl;
     int tid_recv, tid_send;
@@ -54,10 +54,11 @@ void Client::Connect()
     pthread_join(recv_thread, nullptr);
 
 }
-void *Client::RecvHandler(void *arg)
+
+void* Client::RecvHandler(void* arg)
 {
     char buffer[1024];
-    auto *client = (Client *) arg;
+    auto* client = (Client*) arg;
     ssize_t n;
     while (1) {
         memset(buffer, 0, sizeof buffer);
@@ -75,10 +76,10 @@ void *Client::RecvHandler(void *arg)
     }
 }
 
-void *Client::SendHandler(void *arg)
+void* Client::SendHandler(void* arg)
 {
-    auto *client = (Client *) arg;
-    char *buffer = nullptr;
+    auto* client = (Client*) arg;
+    char* buffer = nullptr;
     size_t len = 0;
     while (1) {
         getline(&buffer, &len, stdin);
