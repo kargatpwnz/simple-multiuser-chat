@@ -149,6 +149,10 @@ void Server::BcastMessage(const char* msg)
 
 void Server::CreateAndStartDaemon()
 {
+    if (!is_socket_created_) {
+        std::cout << "Create socket first!" << std::endl;
+        exit(EXIT_FAILURE);
+    }
     std::ifstream pid_file("/tmp/server_pid", std::ifstream::in); // File with server pid
     if (pid_file.good()) {
         std::cout << "Server already running" << std::endl;
@@ -258,4 +262,5 @@ void Server::CreateSocketAndListen()
 
     log_file_ << "listening for new connections" << std::endl;
     listen(server_sock_, 10);
+    is_socket_created_ = true;
 }

@@ -22,17 +22,17 @@ public:
     void CreateSocketAndListen();
     void KillDaemon();
 private:
-
     static std::vector<Client*> clients_;
-    int server_sock_;
 
+    int server_sock_;
     struct sockaddr_in server_addr_, client_addr_; // socket structures
     int port_num_ = 1500;
 
     static pthread_mutex_t mutex_; // mutex for critical sections
     pthread_t threads_[10]; // threads for connection handle
-    static int idx_;
+    static int idx_; // index for new connections
 
+    bool is_socket_created_ = false;
     std::ofstream log_file_;
     static int FindClientIndex(Client* client);
     static void* HandleClient(void* arg);
