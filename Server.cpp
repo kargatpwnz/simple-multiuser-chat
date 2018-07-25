@@ -15,21 +15,26 @@
 // Static variables
 std::vector<Client *> Server::clients_;
 pthread_mutex_t Server::mutex_;
-//pthread_t Server::threads_[];
-
+//std::ofstream Server::log_file_;
 int Server::idx_;
 
 Server::Server()
 {
+    // Create file to save logs
+    log_file_.open("/tmp/chat_server.log", std::ofstream::app);
+
     // Create socket, fill struct, then listen for connections
     if ((server_sock_ = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket create error");
+        log_file_ << "socket create error" << std::endl;
         exit(EXIT_FAILURE);
+    } else {
+        log_file_ << "socket created!" << std::endl;
+
     }
 
     int opt;
     if (setsockopt(server_sock_, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof opt) < 0) {
-        perror("setsockopt error");
+        log_file_ << "setsockopt error" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -39,17 +44,17 @@ Server::Server()
     server_addr_.sin_port = htons(port_num_);
 
     if (bind(server_sock_, (struct sockaddr *) &server_addr_, sizeof server_addr_) < 0)
-        perror("bind error");
+        log_file_ << "bind error" << std::endl;
+    else
+        log_file_ << "socket binded" << std::endl;
 
+
+    log_file_ << "listening for new connections" << std::endl;
     listen(server_sock_, 10);
 }
 
 Server::~Server()
 {
-    for (auto &client : clients_)
-        delete client;
-
-
 }
 
 
@@ -60,7 +65,6 @@ void Server::HandleConnections()
     socklen_t client_len = sizeof client_addr_;
     Server::mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
-    int thread_count = 0;
     // Endless loop for connection handling
     while (1) {
         if (clients_.size() < 10) {
@@ -74,8 +78,10 @@ void Server::HandleConnections()
             pthread_mutex_unlock(&Server::mutex_);
             SendOnline(clients_.size());
             if (client->client_sock < 0) {
-                perror("accept error");
+                log_file_ << "accept error" << std::endl;
             } else {
+                log_file_ << "Connected ip " << inet_ntoa(client_addr_.sin_addr) << ":" <<
+                          ntohs(client_addr_.sin_port) << std::endl;
                 pthread_create(&threads_[idx_], NULL, HandleClient, client);
                 idx_ = clients_.size();
             }

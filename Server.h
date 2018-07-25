@@ -11,14 +11,14 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <vector>
-
+#include <fstream>
 
 class Server {
 public:
     Server();
     virtual ~Server();
     void HandleConnections();
-
+    
 private:
     static std::vector<Client *> clients_;
 
@@ -31,10 +31,11 @@ private:
 
     pthread_t threads_[10]; // threads for connection handle
     static int idx_;
-    static void *HandleClient(void *arg);
-    static void BcastMessage(const char *msg, Client *client);
+    std::ofstream log_file_;
 
     static int FindClientIndex(Client *client);
+    static void *HandleClient(void *arg);
+    static void BcastMessage(const char *msg, Client *client);
     static void SendOnline(unsigned online);
     static void BcastMessage(const char* msg);
 

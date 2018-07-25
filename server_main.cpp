@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
     // Create daemon
     if (to_start) {
-        std::ifstream pid_file("/tmp/log.txt", std::ifstream::in); // File with server pid
+        std::ifstream pid_file("/tmp/server_pid", std::ifstream::in); // File with server pid
         if (pid_file.good()) {
             std::cout << "Server already running" << std::endl;
             pid_file.close();
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         // Kill parent process
         if (process_id > 0) {
             std::cout << "Server process id " << process_id << std::endl;
-            std::ofstream out_pid_file("/tmp/log.txt");
+            std::ofstream out_pid_file("/tmp/server_pid");
 
             if (out_pid_file.is_open()) {
                 out_pid_file << process_id << std::endl;
@@ -120,14 +120,14 @@ int main(int argc, char* argv[])
     // Read server process id from file, kill process and remove file
     if (to_kill) {
         std::cout << "KILL" << std::endl;
-        std::ifstream pid_file("/tmp/log.txt");
+        std::ifstream pid_file("/tmp/server_pid");
         int pid;
         pid_file >> pid;
 
         int code_kill = kill(pid, SIGKILL);
         if (code_kill != 0)
             perror("Proc kill error");
-        int code_remove = remove("/tmp/log.txt");
+        int code_remove = remove("/tmp/server_pid");
 
         if (code_remove != 0)
             perror("delete file error");
